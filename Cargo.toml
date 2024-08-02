@@ -19,6 +19,11 @@ bevy = { version = "0.14", features = [
 
 [dev-dependencies]
 bevy = { version = "0.14", features = [
+    "bevy_text",
+    "bevy_ui",
+    "bevy_color",
+    "bevy_winit",
+    "wayland",
     "dynamic_linking",
 ], default-features = false }
 

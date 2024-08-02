@@ -6,7 +6,7 @@ bevy_noti_box
 [![dependency status](https://deps.rs/repo/gitlab/kimtinh/bevy-noti-box/status.svg)](https://deps.rs/repo/gitlab/kimtinh/bevy-noti-box)
 [![pipeline status](https://gitlab.com/kimtinh/bevy-noti-box/badges/master/pipeline.svg)](https://gitlab.com/kimtinh/bevy-noti-box/-/commits/master)
 
-![](examples/demo.mp4)
+Drafting. Don't use this.
 
 
 Quickstart
