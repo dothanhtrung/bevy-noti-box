@@ -81,9 +81,9 @@ const BACKGROUND_COLOR: Color = Color::srgb(
 #[derive(Default)]
 pub enum NotiPosition {
     #[default]
+    TopRight,
     TopLeft,
     TopMid,
-    TopRight,
     MidLeft,
     Center,
     MidRight,
@@ -125,7 +125,13 @@ impl Default for NotiBoxEvent {
 impl NotiBoxEvent {
     pub fn from_message(msg: String) -> Self {
         NotiBoxEvent {
-            msg: vec![TextSection::new(msg, TextStyle::default())],
+            msg: vec![TextSection::new(
+                msg,
+                TextStyle {
+                    font_size: 20.,
+                    ..default()
+                },
+            )],
             ..default()
         }
     }
@@ -188,6 +194,8 @@ fn pos_to_style(pos: &NotiPosition) -> Style {
         width: Val::Percent(20.),
         height: Val::Percent(20.),
         margin: UiRect::all(Val::Px(5.)),
+        justify_items: JustifyItems::Center,
+        align_items: AlignItems::Center,
         ..default()
     };
 

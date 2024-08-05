@@ -23,6 +23,7 @@ bevy = { version = "0.14", features = [
     "bevy_ui",
     "bevy_color",
     "bevy_winit",
+    "default_font",
     "wayland",
     "dynamic_linking",
 ], default-features = false }
