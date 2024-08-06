@@ -27,6 +27,7 @@ bevy = { version = "0.14", features = [
     "wayland",
     "dynamic_linking",
 ], default-features = false }
+bevy-inspector-egui = "0.25"
 
 [features]
 default = ["state"]

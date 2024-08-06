@@ -7,16 +7,16 @@ use bevy::{
     app::{App, Plugin, Update},
     color::{Alpha, Color},
     prelude::{
-        default, BuildChildren, Changed, Commands, Component, DespawnRecursiveExt, Entity, Event, EventReader,
-        NodeBundle, Query, Res, TextBundle, With,
+        Changed, Commands, Component, default, DespawnRecursiveExt, Entity, Event, EventReader, Query, Res, TextBundle,
+        With,
     },
     text::{TextSection, TextStyle},
     time::{Time, Timer, TimerMode},
     ui::{AlignSelf, BackgroundColor, BorderColor, Interaction, JustifySelf, Style, UiRect, Val},
 };
-
 #[cfg(feature = "state")]
-use bevy::prelude::{in_state, States, IntoSystemConfigs};
+use bevy::prelude::{in_state, IntoSystemConfigs, States};
+use bevy::prelude::{AlignItems, BuildChildren, JustifyItems, NodeBundle, Text};
 
 macro_rules! plugin_systems {
     ( ) => {
