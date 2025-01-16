@@ -2,21 +2,11 @@
 
 //!
 //!
-
 use bevy::{
     app::{App, Plugin, Update},
     color::{Alpha, Color},
-    prelude::{
-        Changed, Commands, Component, default, DespawnRecursiveExt, Entity, Event, EventReader, Query, Res, TextBundle,
-        With,
-    },
-    text::{TextSection, TextStyle},
-    time::{Time, Timer, TimerMode},
-    ui::{AlignSelf, BackgroundColor, BorderColor, Interaction, JustifySelf, Style, UiRect, Val},
+    prelude::*,
 };
-#[cfg(feature = "state")]
-use bevy::prelude::{in_state, IntoSystemConfigs, States};
-use bevy::prelude::{AlignItems, BuildChildren, JustifyItems, NodeBundle, Text};
 
 macro_rules! plugin_systems {
     ( ) => {
@@ -101,7 +91,8 @@ enum AnimationState {
 
 #[derive(Event)]
 pub struct NotiBoxEvent {
-    pub msg: Vec<TextSection>,
+    pub msg: String,
+    pub font: Option<TextFont>,
     pub pos: NotiPosition,
     pub show_time: f32,
     pub background_color: BackgroundColor,
@@ -112,8 +103,9 @@ pub struct NotiBoxEvent {
 impl Default for NotiBoxEvent {
     fn default() -> Self {
         Self {
-            msg: Default::default(),
-            pos: Default::default(),
+            msg: String::new(),
+            font: None,
+            pos: NotiPosition::default(),
             show_time: 5.,
             background_color: BACKGROUND_COLOR.into(),
             width: Val::Percent(20.),
@@ -124,20 +116,12 @@ impl Default for NotiBoxEvent {
 
 impl NotiBoxEvent {
     pub fn from_message(msg: String) -> Self {
-        NotiBoxEvent {
-            msg: vec![TextSection::new(
-                msg,
-                TextStyle {
-                    font_size: 20.,
-                    ..default()
-                },
-            )],
-            ..default()
-        }
+        NotiBoxEvent { msg, ..default() }
     }
 }
 
 #[derive(Component, Default)]
+#[require(Interaction)]
 struct NotiBox {
     state: AnimationState,
     timer: Option<Timer>,
@@ -156,16 +140,12 @@ fn listen_event(mut commands: Commands, mut event: EventReader<NotiBoxEvent>) {
         commands
             .spawn((
                 NotiBox { timer, ..default() },
-                Interaction::None,
-                NodeBundle {
-                    style: pos_to_style(&noti.pos),
-                    background_color: noti.background_color,
-                    border_color,
-                    ..default()
-                },
+                pos_to_style(&noti.pos),
+                noti.background_color,
+                border_color,
             ))
             .with_children(|builder| {
-                builder.spawn(TextBundle::from_sections(noti.msg.clone()));
+                builder.spawn((Text::from(noti.msg.clone()),));
             });
     }
 }
@@ -189,8 +169,8 @@ fn countdown(mut commands: Commands, mut query: Query<(Entity, &mut NotiBox)>, t
     }
 }
 
-fn pos_to_style(pos: &NotiPosition) -> Style {
-    let mut ret = Style {
+fn pos_to_style(pos: &NotiPosition) -> Node {
+    let mut ret = Node {
         width: Val::Percent(20.),
         height: Val::Percent(20.),
         margin: UiRect::all(Val::Px(5.)),

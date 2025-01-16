@@ -29,21 +29,14 @@ struct SpamTimer {
 }
 
 fn setup(mut commands: Commands, mut event: EventWriter<NotiBoxEvent>) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d::default());
 
     commands.spawn(SpamTimer {
         timer: Timer::from_seconds(6., TimerMode::Repeating),
     });
 
-    let msg = TextSection::new(
-        "Bello! La la la!",
-        TextStyle {
-            font_size: 32.,
-            ..default()
-        },
-    );
     event.send(NotiBoxEvent {
-        msg: vec![msg],
+        msg: "Bello! La la la!".to_string(),
         pos: NotiPosition::TopRight,
         ..default()
     });

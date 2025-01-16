@@ -22,6 +22,7 @@ Please see [LICENSE](./LICENSE).
 Compatible Bevy Versions
 ------------------------
 
-| bevy | bevy_noti_box                  |
-|------|------------------------------|
-| 0.14 | 0.0.1, branch `master`       |
+| bevy | bevy_noti_box          |
+|------|------------------------|
+| 0.15 | 0.0.3, branch `master` |
+| 0.14 | 0.0.1                  |

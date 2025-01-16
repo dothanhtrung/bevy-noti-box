@@ -1,6 +1,6 @@
 [package]
 name = "bevy_noti_box"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["Trung Do <dothanhtrung@pm.me>"]
 edition = "2021"
 license = "MIT OR Apache-2.0"
@@ -11,14 +11,14 @@ exclude = ["assets", "examples", "tests", ".cargo"]
 categories = ["game-development"]
 
 [dependencies]
-bevy = { version = "0.14", features = [
+bevy = { version = "0.15", features = [
     "bevy_text",
     "bevy_ui",
     "bevy_color",
 ], default-features = false }
 
 [dev-dependencies]
-bevy = { version = "0.14", features = [
+bevy = { version = "0.15", features = [
     "bevy_text",
     "bevy_ui",
     "bevy_color",
@@ -27,7 +27,7 @@ bevy = { version = "0.14", features = [
     "wayland",
     "dynamic_linking",
 ], default-features = false }
-bevy-inspector-egui = "0.25"
+bevy-inspector-egui = "0.28"
 
 [features]
 default = ["state"]
