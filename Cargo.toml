@@ -4,9 +4,9 @@ version = "0.0.2"
 authors = ["Trung Do <dothanhtrung@pm.me>"]
 edition = "2021"
 license = "MIT OR Apache-2.0"
-repository = ""
+repository = "https://gitlab.com/kimtinh/bevy-noti-box"
 keywords = ["bevy"]
-description = ""
+description = "Bevy plugin for notification"
 exclude = ["assets", "examples", "tests", ".cargo"]
 categories = ["game-development"]
 
@@ -18,16 +18,8 @@ bevy = { version = "0.15", features = [
 ], default-features = false }
 
 [dev-dependencies]
-bevy = { version = "0.15", features = [
-    "bevy_text",
-    "bevy_ui",
-    "bevy_color",
-    "bevy_winit",
-    "default_font",
-    "wayland",
-    "dynamic_linking",
-], default-features = false }
-bevy-inspector-egui = "0.28"
+bevy = { version = "0.15", features = ["dynamic_linking"] }
+bevy-inspector-egui = "0.29"
 
 [features]
 default = ["state"]

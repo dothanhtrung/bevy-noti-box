@@ -38,6 +38,7 @@ fn setup(mut commands: Commands, mut event: EventWriter<NotiBoxEvent>) {
     event.send(NotiBoxEvent {
         msg: "Bello! La la la!".to_string(),
         pos: NotiPosition::TopRight,
+        show_time: 2.,
         ..default()
     });
 }

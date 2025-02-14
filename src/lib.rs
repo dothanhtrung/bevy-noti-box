@@ -62,11 +62,9 @@ impl Plugin for NotiBoxPluginNoState {
     }
 }
 
-const BACKGROUND_COLOR: Color = Color::srgb(
-    0x1d as f32 / u8::MAX as f32,
-    0x20 as f32 / u8::MAX as f32,
-    0x21 as f32 / u8::MAX as f32,
-);
+const BACKGROUND_COLOR: Color = Color::BLACK;
+
+const DEFAULT_ANIMATION_DURATION: f32 = 0.5;
 
 #[derive(Default)]
 pub enum NotiPosition {
@@ -82,17 +80,19 @@ pub enum NotiPosition {
     BotRight,
 }
 
-#[derive(Default)]
+#[derive(Default, PartialEq)]
 enum AnimationState {
     #[default]
-    FadeIn,
-    FadeOut,
+    Start,
+    Middle,
+    End,
 }
 
 #[derive(Event)]
 pub struct NotiBoxEvent {
     pub msg: String,
-    pub font: Option<TextFont>,
+    pub font: TextFont,
+    pub text_color: Color,
     pub pos: NotiPosition,
     pub show_time: f32,
     pub background_color: BackgroundColor,
@@ -104,7 +104,8 @@ impl Default for NotiBoxEvent {
     fn default() -> Self {
         Self {
             msg: String::new(),
-            font: None,
+            font: TextFont::default(),
+            text_color: Color::WHITE,
             pos: NotiPosition::default(),
             show_time: 5.,
             background_color: BACKGROUND_COLOR.into(),
@@ -123,30 +124,46 @@ impl NotiBoxEvent {
 #[derive(Component, Default)]
 #[require(Interaction)]
 struct NotiBox {
-    state: AnimationState,
-    timer: Option<Timer>,
+    states: Vec<(AnimationState, Timer)>,
 }
 
 fn listen_event(mut commands: Commands, mut event: EventReader<NotiBoxEvent>) {
     for noti in event.read() {
-        let mut timer = None;
-        if noti.show_time > 0. {
-            timer = Some(Timer::from_seconds(noti.show_time, TimerMode::Once))
-        }
+        let states = if noti.show_time > 0. {
+            vec![
+                (
+                    AnimationState::Start,
+                    Timer::from_seconds(DEFAULT_ANIMATION_DURATION, TimerMode::Once),
+                ),
+                (
+                    AnimationState::Middle,
+                    Timer::from_seconds(noti.show_time, TimerMode::Once),
+                ),
+                (
+                    AnimationState::End,
+                    Timer::from_seconds(DEFAULT_ANIMATION_DURATION, TimerMode::Once),
+                ),
+            ]
+        } else {
+            Vec::new()
+        };
 
         let mut border_color: BorderColor = noti.background_color.0.into();
         border_color.0.set_alpha(0.4);
+        let mut background_color = noti.background_color.0;
+        background_color.set_alpha(0.0);
+        let mut text_color = noti.text_color;
+        text_color.set_alpha(0.0);
 
-        commands
-            .spawn((
-                NotiBox { timer, ..default() },
-                pos_to_style(&noti.pos),
-                noti.background_color,
-                border_color,
-            ))
-            .with_children(|builder| {
-                builder.spawn((Text::from(noti.msg.clone()),));
-            });
+        commands.spawn((
+            NotiBox { states },
+            pos_to_style(&noti.pos),
+            BackgroundColor::from(background_color),
+            border_color,
+            Text::from(noti.msg.clone()),
+            noti.font.clone(),
+            TextColor::from(text_color),
+        ));
     }
 }
 
@@ -158,13 +175,38 @@ fn listen_click(mut commands: Commands, query: Query<(&Interaction, Entity), (Ch
     }
 }
 
-fn countdown(mut commands: Commands, mut query: Query<(Entity, &mut NotiBox)>, time: Res<Time>) {
-    for (e, mut noti_box) in query.iter_mut() {
-        if let Some(timer) = noti_box.timer.as_mut() {
-            timer.tick(time.delta());
-            if timer.just_finished() {
-                commands.entity(e).despawn_recursive();
+fn countdown(
+    mut commands: Commands,
+    mut query: Query<(Entity, &mut NotiBox, &mut BackgroundColor, &mut TextColor)>,
+    time: Res<Time>,
+) {
+    for (e, mut noti_box, mut bg_color, mut text_color) in query.iter_mut() {
+        for (state, ref mut timer) in noti_box.states.iter_mut() {
+            if timer.finished() {
+                continue;
             }
+            timer.tick(time.delta());
+            match state {
+                AnimationState::Start => {
+                    let alpha = timer.elapsed_secs() / timer.duration().as_secs_f32();
+                    bg_color.0.set_alpha(alpha);
+                    text_color.0.set_alpha(alpha);
+                }
+                AnimationState::Middle => {
+                    bg_color.0.set_alpha(1.);
+                    text_color.0.set_alpha(1.);
+                }
+                AnimationState::End => {
+                    let alpha = timer.remaining_secs() / timer.duration().as_secs_f32();
+                    bg_color.0.set_alpha(alpha);
+                    text_color.0.set_alpha(alpha);
+
+                    if timer.just_finished() {
+                        commands.entity(e).despawn_recursive();
+                    }
+                }
+            }
+            break;
         }
     }
 }
@@ -174,8 +216,10 @@ fn pos_to_style(pos: &NotiPosition) -> Node {
         width: Val::Percent(20.),
         height: Val::Percent(20.),
         margin: UiRect::all(Val::Px(5.)),
-        justify_items: JustifyItems::Center,
+        justify_content: JustifyContent::Center,
+        align_content: AlignContent::Center,
         align_items: AlignItems::Center,
+        justify_items: JustifyItems::Center,
         ..default()
     };
 
