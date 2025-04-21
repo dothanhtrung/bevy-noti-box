@@ -14,17 +14,15 @@ macro_rules! plugin_systems {
     };
 }
 
-#[cfg(feature = "state")]
 #[derive(Default)]
 pub struct NotiBoxPlugin<T>
 where
     T: States,
 {
     /// List of game state that this plugin will run in
-    pub states: Option<Vec<T>>,
+    pub states: Vec<T>,
 }
 
-#[cfg(feature = "state")]
 impl<T> Plugin for NotiBoxPlugin<T>
 where
     T: States,
@@ -32,33 +30,35 @@ where
     fn build(&self, app: &mut App) {
         app.add_event::<NotiBoxEvent>();
 
-        if let Some(states) = &self.states {
-            for state in states {
+        if self.states.is_empty() {
+            app.add_systems(Update, plugin_systems!());
+        } else {
+            for state in self.states.iter() {
                 app.add_systems(Update, plugin_systems!().run_if(in_state(state.clone())));
             }
-        } else {
-            app.add_systems(Update, plugin_systems!());
         }
     }
 }
 
-#[cfg(feature = "state")]
 impl<T> NotiBoxPlugin<T>
 where
     T: States,
 {
     pub fn new(states: Vec<T>) -> Self {
-        Self { states: Some(states) }
+        Self { states }
     }
 }
 
+#[derive(States, Clone, Debug, Hash, Eq, PartialEq)]
+pub enum DummyState {}
+
 /// Use this if you don't care to state and want this plugin's systems run all the time.
 #[derive(Default)]
-pub struct NotiBoxPluginNoState;
+pub struct NotiBoxPluginAnyState;
 
-impl Plugin for NotiBoxPluginNoState {
-    fn build(&self, app: &mut App) {
-        app.add_event::<NotiBoxEvent>().add_systems(Update, plugin_systems!());
+impl NotiBoxPluginAnyState {
+    pub fn any() -> NotiBoxPlugin<DummyState> {
+        NotiBoxPlugin::new(Vec::new())
     }
 }
 
@@ -170,7 +170,7 @@ fn listen_event(mut commands: Commands, mut event: EventReader<NotiBoxEvent>) {
 fn listen_click(mut commands: Commands, query: Query<(&Interaction, Entity), (Changed<Interaction>, With<NotiBox>)>) {
     for (i, e) in query.iter() {
         if *i == Interaction::Pressed {
-            commands.entity(e).despawn_recursive();
+            commands.entity(e).despawn();
         }
     }
 }
@@ -202,7 +202,7 @@ fn countdown(
                     text_color.0.set_alpha(alpha);
 
                     if timer.just_finished() {
-                        commands.entity(e).despawn_recursive();
+                        commands.entity(e).despawn();
                     }
                 }
             }
