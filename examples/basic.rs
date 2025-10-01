@@ -26,7 +26,7 @@ struct SpamTimer {
     timer: Timer,
 }
 
-fn setup(mut commands: Commands, mut event: EventWriter<NotiBoxEvent>) {
+fn setup(mut commands: Commands, mut event: MessageWriter<NotiBoxEvent>) {
     commands.spawn(Camera2d);
 
     commands.spawn(SpamTimer {
@@ -41,7 +41,7 @@ fn setup(mut commands: Commands, mut event: EventWriter<NotiBoxEvent>) {
     });
 }
 
-fn spam_noti(time: Res<Time>, mut event: EventWriter<NotiBoxEvent>, mut query: Query<&mut SpamTimer>) {
+fn spam_noti(time: Res<Time>, mut event: MessageWriter<NotiBoxEvent>, mut query: Query<&mut SpamTimer>) {
     for mut spam in query.iter_mut() {
         spam.timer.tick(time.delta());
         if spam.timer.just_finished() {

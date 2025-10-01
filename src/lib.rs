@@ -1,4 +1,3 @@
-// Copyright 2024 Trung Do <dothanhtrung@pm.me>
 
 //!
 //!
@@ -28,7 +27,7 @@ where
     T: States,
 {
     fn build(&self, app: &mut App) {
-        app.add_event::<NotiBoxEvent>();
+        app.add_message::<NotiBoxEvent>();
 
         if self.states.is_empty() {
             app.add_systems(Update, plugin_systems!());
@@ -88,7 +87,7 @@ enum AnimationState {
     End,
 }
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct NotiBoxEvent {
     pub msg: String,
     pub font: TextFont,
@@ -127,7 +126,7 @@ struct NotiBox {
     states: Vec<(AnimationState, Timer)>,
 }
 
-fn listen_event(mut commands: Commands, mut event: EventReader<NotiBoxEvent>) {
+fn listen_event(mut commands: Commands, mut event: MessageReader<NotiBoxEvent>) {
     for noti in event.read() {
         let states = if noti.show_time > 0. {
             vec![
@@ -148,8 +147,9 @@ fn listen_event(mut commands: Commands, mut event: EventReader<NotiBoxEvent>) {
             Vec::new()
         };
 
-        let mut border_color: BorderColor = noti.background_color.0.into();
-        border_color.0.set_alpha(0.4);
+        let mut bg_color = noti.background_color.0.clone();
+        bg_color.set_alpha(0.4);
+        let border_color = BorderColor::from(bg_color);
         let mut background_color = noti.background_color.0;
         background_color.set_alpha(0.0);
         let mut text_color = noti.text_color;
@@ -182,7 +182,7 @@ fn countdown(
 ) {
     for (e, mut noti_box, mut bg_color, mut text_color) in query.iter_mut() {
         for (state, ref mut timer) in noti_box.states.iter_mut() {
-            if timer.finished() {
+            if timer.is_finished() {
                 continue;
             }
             timer.tick(time.delta());
